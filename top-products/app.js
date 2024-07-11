@@ -67,18 +67,22 @@ app.get('/categories/:categoryname/products/:productid', async (req, res) => {
     // Prepare requests to each company's API
     const requests = companyNames.map(company => {
         const url = `http://20.244.56.144/products/companies/${company}/categories/${categoryname}/products`;
-        return axios.get(url).then(response => response.data);
+        return axios.get(url, {
+            params: {
+                productid // Include productid as a parameter
+            }
+        }).then(response => response.data);
     });
 
     try {
         // Execute requests in parallel
         const responses = await Promise.all(requests);
 
-        // Find the product with matching productid
+        // Find the product with matching productid across responses
         let productDetails = null;
         responses.some(products => {
             productDetails = products.find(product => product.productid === productid);
-            return productDetails;
+            return productDetails; // Exit loop when productDetails is found
         });
 
         if (productDetails) {
